@@ -1,0 +1,6 @@
+black
+bs4
+flask
+pip
+pylint
+python-dotenv
