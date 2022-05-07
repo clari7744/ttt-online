@@ -51,6 +51,23 @@
 
 <head>
 	<title>TicTacToe!</title>
+	<script>
+		async function setSpace(elem) {
+			args = `game=${document.getElementById('game_id').innerHTML.trim()}`;
+			args += `&space=${elem}`;
+			n = document.getElementById('div_name').innerHTML.split(':');
+			if (!n.length > 2) args += `&user=${n[1].slice(1)}`;
+			console.log(args)
+			resp = await fetch(`${document.location.origin}/setSpace?${args}`)
+			s = resp.status;
+			resp = await resp.json();
+			if (s != 200) {
+				return alert(resp.message);
+			}
+			document.getElementById(elem).innerHTML = resp.move;
+		}
+	</script>
 </head>
 <h1>TicTacToe!</h1>
+
 </html>

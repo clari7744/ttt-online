@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/clari/Repositories/ttt-online/venv"
+VIRTUAL_ENV="/home/clari/Repositories/online-TicTacToe.py/venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

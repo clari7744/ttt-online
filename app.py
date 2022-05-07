@@ -3,18 +3,23 @@ Main app file
 """
 # https://flask.palletsprojects.com/en/2.1.x/debugging/
 # look up jsonp
+import uuid
 import bs4
 import flask
+import json
 
 app = flask.Flask(__name__)
 # flask.request.args = query params
 
 games = {}
 
+
 @app.route("/")
 def home():
     """index"""
     return "Games will show here"
+
+
 @app.route("/game")
 def active_game():
     """Active game"""
@@ -49,37 +54,46 @@ def active_game():
         "input",
         id="submit_name",
         type="submit",
-        onclick="document.getElementById('div_name').innerHTML = 'Name: '+document.getElementById('input_name').value;",  # "{div = document.getElementById('div_name'); div.content = document.getElementById('input_name').value; div.innerHTML = 'Name: ' + div.content;}",
+        onclick="document.getElementById('div_name').innerHTML = 'Name: '+document.getElementById('input_name').value;",
     )
     name_div.append(name_input)
     name_div.append(name_submit)
     body.append(name_div)
-    script = soup.new_tag("script")
-    script.append(
-        """async function setSpace(elem) {
-            n=document.getElementById('div_name').innerHTML.split(':');
-            u=n.length>2?'no_name':n[1].slice(1); 
-            document.getElementById(elem).innerHTML = await fetch(`${document.location.origin}/setSpace?user=${u}&space=${elem}`)
-                //.then(resp=>console.log(resp))
-                .then(resp=>resp.json())
-                //.then(json=>console.log(json))
-                .then(j=>j.move)
-            }"""
-    )
-    # script.append(
-    # "function setSpace(elem) {document.getElementById(elem).innerHTML = '<span class=text> x </span>';}"
-    # )
-    body.append(script)
     soup.find("html").append(body)
+    foot = soup.new_tag("footer", id="game_id")
+    foot.append(uuid.uuid1().hex)
+    soup.find("html").append(foot)
     return soup.prettify()
 
-@app.route('/setSpace')
-def setSpace():
-    user = flask.request.args.get('user', None)
-    if not user: return "User is required"
-    space = flask.request.args.get('space', None)
-    if not space: return "Space is required"
-    return '{"move":"x"}'
+
+@app.route("/setSpace")
+def set_space():
+    """
+    Set space
+    """
+    game, user, space = [
+        flask.request.args.get(x, None) for x in ["game", "user", "space"]
+    ]
+    if not game:
+        return flask.Response(
+            json.dumps({"message": "No game specified"}),
+            status=400,
+            mimetype="application/json",
+        )
+    if not user or not space:
+        return flask.Response(
+            json.dumps(
+                {"message": ("Space ID" if not space else "Username") + " is required"}
+            ),
+            status=400,
+            mimetype="application/json",
+        )
+    s = "X"  # "O"
+    return flask.Response(
+        json.dumps({"move": s}),
+        status=200,
+        mimetype="application/json",
+    )
 
 
 @app.errorhandler(404)

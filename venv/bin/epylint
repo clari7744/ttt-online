@@ -1,4 +1,4 @@
-#!/home/clari/Repositories/ttt-online/venv/bin/python
+#!/home/clari/Repositories/online-TicTacToe.py/venv/bin/python3.9
 # -*- coding: utf-8 -*-
 import re
 import sys
