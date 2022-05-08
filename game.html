@@ -77,7 +77,9 @@
 			if (s != 200) {
 				return alert(resp.message);
 			}
-			document.getElementById('div_name').innerHTML = `Username: ${name}<br>Opponent: Waiting for opponent to join...`;
+			document.getElementById('share_button').removeAttribute('disabled');
+			document.getElementById('div_name').innerHTML = `Username: ${name}`
+			document.getElementById('div_opponent').innerHTML = `Opponent: Waiting for opponent...`
 			document.getElementById('player_name').content = name;
 			let on = document.getElementById('opponent_name');
 			let ended = [false, false];
@@ -90,7 +92,8 @@
 				if (resp.players.every(e => e) && !on.content && resp.players.length > 1) {
 					on.content = resp.players.filter(p => p != name)[0];
 					let pl = (n) => `${n} (Player ${resp.players.indexOf(n) + 1})`;
-					document.getElementById('div_name').innerHTML = `Username: ${pl(name)}<br>Opponent: ${pl(on.content)}`;
+			document.getElementById('div_name').innerHTML = `Username: ${pl(name)}`
+					document.getElementById('div_opponent').innerHTML = `Opponent: ${pl(on.content)}`;
 					document.getElementById('share_button').remove();
 				}
 				ended = resp.ended;
@@ -126,7 +129,7 @@
 		function share(game) {
 			let url = `${document.location.origin}/game?game=${game}`;
 			const elem = document.createElement('textarea');
-			elem.value = `Play TicTacToe with me! Join at ${url}`;
+			elem.value = `Play TicTacToe with ${document.getElementById('player_name').content}! Join at ${url}`;
 			document.body.appendChild(elem);
 			elem.select();
 			elem.setSelectionRange(0, 99999);

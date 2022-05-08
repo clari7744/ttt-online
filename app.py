@@ -54,12 +54,15 @@ def home():
 @app.route("/game")
 def active_game():
     """Active game"""
+    gameid = flask.request.args.get("game", None)
+    if gameid and (not games.get(gameid) or len(games.get(gameid).get("players", [])) >= 2):
+        return flask.redirect("/")
     soup = bs4.BeautifulSoup(
         open("game.html", "r", encoding="utf-8").read(), "html.parser"
     )
     body = soup.new_tag("body")
     name_div = soup.new_tag("div", id="div_name")
-    name_div.append("Enter name ")
+    name_div.append("Enter name: ")
     name_input = soup.new_tag("input", id="input_name", type="text")
     name_submit = soup.new_tag(
         "input",
@@ -71,15 +74,14 @@ def active_game():
     name_div.append(name_input)
     name_div.append(name_submit)
     body.append(name_div)
+    od = soup.new_tag('div', id='div_opponent')
+    if n:=games.get(gameid, {}).get("players", [""])[0]:
+        od.append(f"Opponent: {n}")
+    body.append(od)
     body.append(soup.new_tag("div", id="board_div"))
     body.append(soup.new_tag("div", id="turn_number"))
 
-    gameid = flask.request.args.get("game", None)
-    if (
-        not gameid
-        or not games.get(gameid)
-        or len(games.get(gameid).get("players", [])) >= 2
-    ):
+    if not gameid:
         gameid = uuid.uuid1().hex
         games[gameid] = {
             "board": {"a": ["", "", ""], "b": ["", "", ""], "c": ["", "", ""]},
@@ -101,6 +103,7 @@ def active_game():
             type="button",
             value="Share",
             id="share_button",
+            disabled="",
             onclick=f"share('{gameid}');",
         )
     )
