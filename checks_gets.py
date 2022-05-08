@@ -1,7 +1,5 @@
+# pylint:disable=invalid-name
 import random
-from utilities import bold as b, r
-
-# CHECKS
 
 
 def check_not_empty(board: dict):
@@ -13,21 +11,21 @@ def check_not_empty(board: dict):
     return True
 
 
-def check_rows(board: dict, m):
+def check_rows(board: dict, sym):
     """
     Checks to see if there's a winning row.
     """
-    if any(r[0] == r[1] == r[2] == m for r in board.values()):
+    if any(r[0] == r[1] == r[2] == sym for r in board.values()):
         return True
     return False
 
 
-def check_cols(board: dict, m):
+def check_cols(board: dict, sym):
     """
     Checks to see if there's a winning column.
     """
     a, b, c = board.values()
-    if any(a[i] == b[i] == c[i] == m for i in range(3)):
+    if any(a[i] == b[i] == c[i] == sym for i in range(3)):
         return True
     return False
 
@@ -42,19 +40,17 @@ def check_diags(board: dict, m):
     return False
 
 
-def end_check(board: dict, last, m):
+def end_check(board: dict, sym):
     """
     Wrapper for the mini-row/col/diag win checks.
     """
     if not check_not_empty(board):
-        return False
-    if any((check_rows(board, m), check_cols(board, m), check_diags(board, m))):
-        print(f"{b}{last}{r} wins!")
-        return True
+        return False, False
+    if any((check_rows(board, sym), check_cols(board, sym), check_diags(board, sym))):
+        return True, True
     if all(x for rs in board.values() for x in rs):
-        print("All spaces are filled!\nTie game!")
-        return True
-    return False
+        return True, False
+    return False, False
 
 
 # GETS
@@ -78,8 +74,6 @@ def get_move(board: dict, _next):
     """
     if _next == "AI":
         text = get_ai_move(board)
-        print(f"{_next}'s move: {b}{text}")
     else:
-        text = input(f"{_next}'s move: {b}").lower()
-    print(r)
+        ...
     return text

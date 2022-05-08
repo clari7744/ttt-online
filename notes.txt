@@ -1,0 +1,6 @@
+- https://flask.palletsprojects.com/en/2.1.x/debugging/
+- https://flask.palletsprojects.com/en/2.1.x/tutorial/deploy/
+- look up jsonp
+-  flask.request.args = query params
+
+- need to validate users x games
