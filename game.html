@@ -53,10 +53,9 @@
 	<title>TicTacToe!</title>
 	<script>
 		async function setSpace(elem) {
-			let args = `game=${document.getElementById('game_id').innerHTML.trim()}`;
-			args += `&space=${elem}`;
-			n = document.getElementById('div_name').innerHTML.split(':');
-			if (n.length == 2) args += `&user=${n[1].trim()}`;
+			let args = `game=${document.getElementById('game_id').content}&space=${elem}`;
+			let n = document.getElementById('player_name').content
+			if (n) args += `&user=${n}`;
 			let resp = await fetch(`${document.location.origin}/setSpace?${args}`)
 			let s = resp.status;
 			resp = await resp.json();
@@ -75,13 +74,14 @@
 		}
 		async function setPlayer(name) {
 			name = escape(name)
-			resp = await fetch(`${document.location.origin}/setPlayer?game=${document.getElementById('game_id').innerHTML.trim()}&user=${name}`);
+			resp = await fetch(`${document.location.origin}/setPlayer?game=${document.getElementById('game_id').content}&user=${name}&playerNum=${document.getElementById('player_num').content}`);
 			s = resp.status;
 			resp = await resp.json();
 			if (s != 200) {
 				return alert(resp.message);
 			}
 			document.getElementById('div_name').innerHTML = `Username: ${name}`;
+			document.getElementById('player_name').content = name;
 		}
 	</script>
 </head>

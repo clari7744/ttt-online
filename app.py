@@ -24,10 +24,26 @@ def home():
     )
     body = soup.new_tag("body")
     start_new = soup.new_tag(
-        "input", id="start_new", type="button", value="Start New", onclick="location.href='/game';"
+        "input",
+        id="start_new",
+        type="button",
+        value="Start New",
+        onclick="location.href='/game';",
     )
     body.append(start_new)
-    soup.find('html').append(body)
+    for gid, game in games.items():
+        if len(game['players']) != 1 or game['ended']:continue
+        join_game_div = soup.new_tag("div", id="join_game_div")
+        join_game_div.append(f"Player: {game['players'][0]}")
+        join_game_div.append(soup.new_tag(
+            "input",
+            id="join_game",
+            type="button",
+            value="Join Game",
+            onclick=f"location.href='/game?game={gid}';",
+        ))
+        body.append(join_game_div)
+    soup.find("html").append(body)
     return soup.prettify()
 
 
@@ -64,23 +80,31 @@ def active_game():
     name_submit = soup.new_tag(
         "input",
         id="submit_name",
-        type="submit",value="Enter",
-        onclick="setPlayer(document.getElementById('input_name').value);",
+        type="submit",
+        value="Enter",
+        onclick="setPlayer(document.getElementById('input_name').value.trim());",
     )
     name_div.append(name_input)
     name_div.append(name_submit)
     body.append(name_div)
     soup.find("html").append(body)
-    foot = soup.new_tag("footer", id="game_id")
-    gameid = uuid.uuid1().hex
-    games[gameid] = {
-        "board": {"a": ["", "", ""], "b": ["", "", ""], "c": ["", "", ""]},
-        "turn": False,
-        "players": [],
-        "ended": False
-    }
-    foot.append(gameid)
-    soup.find("html").append(foot)
+
+    gameid = flask.request.args.get("game", None)
+    if (
+        not gameid
+        or not games.get(gameid)
+        or len(games.get(gameid).get("players", [])) >= 2
+    ):
+        gameid = uuid.uuid1().hex
+        games[gameid] = {
+            "board": {"a": ["", "", ""], "b": ["", "", ""], "c": ["", "", ""]},
+            "turn": False,
+            "players": [],
+            "ended": False,
+        }
+    games[gameid]['players'].append('')
+    for i, v in dict(game_id=gameid, player_num=len(games[gameid]['players']), player_name='').items():
+        soup.find('head').append(soup.new_tag('meta', id=i, content=v))
     return soup.prettify()
 
 
@@ -116,6 +140,24 @@ def set_space():
             mimetype="application/json",
         )
     s = game["turn"]
+    if s and len(game["players"]) < 2:
+        return flask.Response(
+            json.dumps({"message": "Waiting for player 2..."}),
+            status=400,
+            mimetype="application/json",
+        )
+    if int(s) != game['players'].index(user):
+        return flask.Response(
+            json.dumps({"message": "Not your turn"}),
+            status=400,
+            mimetype="application/json",
+        )
+    if game["board"][space[0]][int(space[1]) - 1]:
+        return flask.Response(
+            json.dumps({"message": "Space already taken"}),
+            status=400,
+            mimetype="application/json",
+        )
     game["board"][space[0]][int(space[1]) - 1] = x[s]
     game["turn"] = not s
     game["ended"] = end_check(game["board"], x[game["turn"] - 1])[0]
@@ -137,7 +179,7 @@ def set_player():
     """
     Set player
     """
-    game, user = [flask.request.args.get(x, None) for x in ["game", "user"]]
+    game, user, player_num = [flask.request.args.get(x, None) for x in ["game", "user", "playerNum"]]
     if not (res := check_game(game))[0]:
         return res[1]
     if user in games[game]["players"]:
@@ -146,7 +188,7 @@ def set_player():
             status=400,
             mimetype="application/json",
         )
-    games[game]["players"].append(user)
+    games[game]["players"][int(player_num) - 1] = user
     return flask.Response(
         json.dumps({"message": "Player set"}), status=200, mimetype="application/json"
     )
