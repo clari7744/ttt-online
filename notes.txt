@@ -1,17 +1,7 @@
-- https://flask.palletsprojects.com/en/2.1.x/debugging/
 - https://flask.palletsprojects.com/en/2.1.x/tutorial/deploy/
 - look up jsonp
--  flask.request.args = query params
-
-- need to validate users x games
 
 todo:
-"share game" button
-blank usernames don't show on index
-show usernames on game page
-fix tie game
-can probably make space already taken update the space value
-..mmm in setSpace use a while loop...maybe... for updating
-make board only show when username is input
-format getBoard to return {"a":[]} json
-while loop with await setTimeout(secs)
+- fix tie games (prob done)
+- validate users x games - when game ID is passed be sure user exists in game
+- add AI option

@@ -251,20 +251,14 @@ def purge_games():
     """
     Purge games
     """
-    games = {}
+    while len(games) > 0:
+        del games[list(games.keys())[0]]
 
 
 @app.errorhandler(404)
 def not_found(details):  # pylint: disable=unused-argument
     """404 page"""
     return "<meta http-equiv='Refresh' content=\"0; url='/?err_code=404'\">"
-
-
-@app.route("/<string:img>.png")
-def png(img=""):
-    return open(
-        img + ".png", "rb"
-    ).read()  # ask how to retrieve local resource without...this
 
 
 def check_game(game):
