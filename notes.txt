@@ -2,6 +2,7 @@
 - look up jsonp
 
 todo:
-- fix tie games (prob done)
 - validate users x games - when game ID is passed be sure user exists in game
 - add AI option
+- figure out how to privatize purgeGames
+- css - make disabled buttons actually look disabled n other stuff

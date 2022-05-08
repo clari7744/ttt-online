@@ -19,10 +19,7 @@ x = "XO"
 @app.route("/")
 def home():
     """index"""
-    soup = bs4.BeautifulSoup(
-        "<!DOCTYPE html><html><head><title>Tic-Tac-Toe Home</title></head></html>",
-        "html.parser",
-    )
+    soup = bs4.BeautifulSoup("index.html", "html.parser")
     body = soup.new_tag("body")
     start_new = soup.new_tag(
         "input",
@@ -55,7 +52,9 @@ def home():
 def active_game():
     """Active game"""
     gameid = flask.request.args.get("game", None)
-    if gameid and (not games.get(gameid) or len(games.get(gameid).get("players", [])) >= 2):
+    if gameid and (
+        not games.get(gameid) or len(games.get(gameid).get("players", [])) >= 2
+    ):
         return flask.redirect("/")
     soup = bs4.BeautifulSoup(
         open("game.html", "r", encoding="utf-8").read(), "html.parser"
@@ -74,8 +73,8 @@ def active_game():
     name_div.append(name_input)
     name_div.append(name_submit)
     body.append(name_div)
-    od = soup.new_tag('div', id='div_opponent')
-    if n:=games.get(gameid, {}).get("players", [""])[0]:
+    od = soup.new_tag("div", id="div_opponent")
+    if n := games.get(gameid, {}).get("players", [""])[0]:
         od.append(f"Opponent: {n}")
     body.append(od)
     body.append(soup.new_tag("div", id="board_div"))
@@ -266,6 +265,9 @@ def not_found(details):  # pylint: disable=unused-argument
 
 
 def check_game(game):
+    """
+    Validates game ID input.
+    """
     if not game:
         return False, flask.Response(
             json.dumps({"message": "No game specified"}),
@@ -282,6 +284,9 @@ def check_game(game):
 
 
 def check_user(user):
+    """
+    Validates user existence.
+    """
     if not user:
         return False, flask.Response(
             json.dumps({"message": "Username is required"}),

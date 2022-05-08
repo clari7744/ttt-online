@@ -51,6 +51,7 @@
 
 <head>
 	<title>TicTacToe!</title>
+	<meta description="Play TicTacToe!">
 	<script>function createElement(name, options) {
 			let element = document.createElement(name);
 			for (let [k, v] of Object.entries(options))
@@ -98,7 +99,7 @@
 				}
 				ended = resp.ended;
 			}
-			alert("Game ended!<br>" + (resp.ended[1] ? "Tie game!" : resp.player + " wins!"));
+			alert("Game ended!\n" + (resp.ended[1] ? "Tie game!" : resp.players[resp.turn] + " wins!"));
 		}
 		async function buildBoard(game) {
 			let resp = await fetch(`${document.location.origin}/getBoard?game=${game}`);
