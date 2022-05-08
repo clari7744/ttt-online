@@ -40,16 +40,16 @@ def check_diags(board: dict, m):
     return False
 
 
-def end_check(board: dict, sym):
+def end_check(board: dict, sym): # Ended, isTie
     """
     Wrapper for the mini-row/col/diag win checks.
     """
     if not check_not_empty(board):
         return False, False
     if any((check_rows(board, sym), check_cols(board, sym), check_diags(board, sym))):
-        return True, True
-    if all(x for rs in board.values() for x in rs):
         return True, False
+    if all(x for rs in board.values() for x in rs):
+        return True, True
     return False, False
 
 

@@ -4,3 +4,14 @@
 -  flask.request.args = query params
 
 - need to validate users x games
+
+todo:
+"share game" button
+blank usernames don't show on index
+show usernames on game page
+fix tie game
+can probably make space already taken update the space value
+..mmm in setSpace use a while loop...maybe... for updating
+make board only show when username is input
+format getBoard to return {"a":[]} json
+while loop with await setTimeout(secs)

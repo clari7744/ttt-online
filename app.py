@@ -32,16 +32,19 @@ def home():
     )
     body.append(start_new)
     for gid, game in games.items():
-        if len(game['players']) != 1 or game['ended']:continue
+        if len(game["players"]) != 1 or game["ended"][0] or not any(game["players"]):
+            continue
         join_game_div = soup.new_tag("div", id="join_game_div")
         join_game_div.append(f"Player: {game['players'][0]}")
-        join_game_div.append(soup.new_tag(
-            "input",
-            id="join_game",
-            type="button",
-            value="Join Game",
-            onclick=f"location.href='/game?game={gid}';",
-        ))
+        join_game_div.append(
+            soup.new_tag(
+                "input",
+                id="join_game",
+                type="button",
+                value="Join Game",
+                onclick=f"location.href='/game?game={gid}';",
+            )
+        )
         body.append(join_game_div)
     soup.find("html").append(body)
     return soup.prettify()
@@ -54,26 +57,6 @@ def active_game():
         open("game.html", "r", encoding="utf-8").read(), "html.parser"
     )
     body = soup.new_tag("body")
-    board = soup.new_tag("div", attrs={"class": "ttt_board"})
-    tbl = soup.new_tag("table", id="ttt_board")
-    for r in "abc":
-        row = soup.new_tag("tr", id=f"row_{r}")
-        for c in "123":
-            col = soup.new_tag("td", id=f"{r}{c}")
-            col.append(
-                soup.new_tag(
-                    "input",
-                    type="button",
-                    id=f"{r}{c}b",
-                    value=" ",
-                    onclick=f"setSpace('{r}{c}')",
-                    attrs={"class": "ttt_space"},
-                )
-            )
-            row.append(col)
-        tbl.append(row)
-    board.append(tbl)
-    body.append(board)
     name_div = soup.new_tag("div", id="div_name")
     name_div.append("Enter name ")
     name_input = soup.new_tag("input", id="input_name", type="text")
@@ -87,7 +70,8 @@ def active_game():
     name_div.append(name_input)
     name_div.append(name_submit)
     body.append(name_div)
-    soup.find("html").append(body)
+    body.append(soup.new_tag("div", id="board_div"))
+    body.append(soup.new_tag("div", id="turn_number"))
 
     gameid = flask.request.args.get("game", None)
     if (
@@ -100,11 +84,26 @@ def active_game():
             "board": {"a": ["", "", ""], "b": ["", "", ""], "c": ["", "", ""]},
             "turn": False,
             "players": [],
-            "ended": False,
+            "ended": (False, False),
         }
-    games[gameid]['players'].append('')
-    for i, v in dict(game_id=gameid, player_num=len(games[gameid]['players']), player_name='').items():
-        soup.find('head').append(soup.new_tag('meta', id=i, content=v))
+    games[gameid]["players"].append("")
+    for i, v in dict(
+        game_id=gameid,
+        player_num=len(games[gameid]["players"]),
+        player_name="",
+        opponent_name="",
+    ).items():
+        soup.find("head").append(soup.new_tag("meta", id=i, content=v))
+    body.append(
+        soup.new_tag(
+            "input",
+            type="button",
+            value="Share",
+            id="share_button",
+            onclick=f"share('{gameid}');",
+        )
+    )
+    soup.find("html").append(body)
     return soup.prettify()
 
 
@@ -133,7 +132,7 @@ def set_space():
             mimetype="application/json",
         )
     game = games.get(game)
-    if game["ended"]:
+    if game["ended"][0]:
         return flask.Response(
             json.dumps({"message": "Game ended"}),
             status=400,
@@ -146,7 +145,7 @@ def set_space():
             status=400,
             mimetype="application/json",
         )
-    if int(s) != game['players'].index(user):
+    if int(s) != game["players"].index(user):
         return flask.Response(
             json.dumps({"message": "Not your turn"}),
             status=400,
@@ -160,12 +159,13 @@ def set_space():
         )
     game["board"][space[0]][int(space[1]) - 1] = x[s]
     game["turn"] = not s
-    game["ended"] = end_check(game["board"], x[game["turn"] - 1])[0]
+    game["ended"] = end_check(game["board"], x[game["turn"] - 1])
     return flask.Response(
         json.dumps(
             {
                 "move": x[s],
-                "gameOver": game["ended"],
+                "ended": game["ended"][0],
+                "tie": game["ended"][1],
                 "player": game["players"][s],
             }
         ),
@@ -179,7 +179,9 @@ def set_player():
     """
     Set player
     """
-    game, user, player_num = [flask.request.args.get(x, None) for x in ["game", "user", "playerNum"]]
+    game, user, player_num = [
+        flask.request.args.get(x, None).strip() for x in ["game", "user", "playerNum"]
+    ]
     if not (res := check_game(game))[0]:
         return res[1]
     if user in games[game]["players"]:
@@ -216,6 +218,40 @@ def check_win():
         status=200,
         mimetype="application/json",
     )
+
+
+@app.route("/getBoard")
+def get_board():
+    """
+    Get board
+    """
+    game = flask.request.args.get("game", None)
+    if not (res := check_game(game))[0]:
+        return res[1]
+    game = games[game]
+    return flask.Response(
+        json.dumps(game["board"]), status=200, mimetype="application/json"
+    )
+
+
+@app.route("/getGame")
+def get_game():
+    """
+    Get game
+    """
+    game = flask.request.args.get("game", None)
+    if not (res := check_game(game))[0]:
+        return res[1]
+    game = games[game]
+    return flask.Response(json.dumps(game), status=200, mimetype="application/json")
+
+
+@app.route("/purgeGames")
+def purge_games():
+    """
+    Purge games
+    """
+    games = {}
 
 
 @app.errorhandler(404)
