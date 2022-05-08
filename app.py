@@ -79,7 +79,7 @@ def active_game():
     if n := games.get(gameid, {}).get("players", [""])[0]:
         od.append(f"Opponent: {n}")
     body.append(od)
-    body.append(soup.new_tag("div", id="board_div"))
+    body.append(soup.new_tag("div", attrs={'id':"board_div", 'class':"board_div"}))
     body.append(soup.new_tag("div", id="turn_number"))
 
     if not gameid:

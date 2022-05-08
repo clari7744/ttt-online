@@ -6,3 +6,4 @@ todo:
 - add AI option
 - figure out how to privatize purgeGames
 - css - make disabled buttons actually look disabled n other stuff
+- center stuff
