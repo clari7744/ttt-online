@@ -3,10 +3,11 @@ Main app file
 """
 # https://flask.palletsprojects.com/en/2.1.x/debugging/
 # look up jsonp
+import json
+import re
 import uuid
 import bs4
 import flask
-import json
 
 app = flask.Flask(__name__)
 # flask.request.args = query params
@@ -88,6 +89,12 @@ def set_space():
             status=400,
             mimetype="application/json",
         )
+    if not re.match("[abcABC][123]", space):
+        return flask.Response(
+            json.dumps({"message": "Invalid space ID - must be `a1` to `c3`"}),
+            status=400,
+            mimetype="application/json",
+        )
     s = "X"  # "O"
     return flask.Response(
         json.dumps({"move": s}),
@@ -109,4 +116,4 @@ def png(img=""):
     ).read()  # ask how to retrieve local resource without...this
 
 
-app.run()
+app.run(port=7744, debug=True)
