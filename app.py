@@ -3,6 +3,7 @@ Main app file
 """
 # pylint: disable=invalid-name
 import json
+import random
 import re
 import uuid
 import bs4
@@ -82,7 +83,7 @@ def active_game():
         gameid = uuid.uuid1().hex
         games[gameid] = {
             "board": {"a": ["", "", ""], "b": ["", "", ""], "c": ["", "", ""]},
-            "turn": False,
+            "turn": random.choice((True, False)),
             "players": [],
             "ended": (False, False),
         }

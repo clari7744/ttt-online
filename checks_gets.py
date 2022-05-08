@@ -40,7 +40,7 @@ def check_diags(board: dict, m):
     return False
 
 
-def end_check(board: dict, sym): # Ended, isTie
+def end_check(board: dict, sym):  # Ended, isTie
     """
     Wrapper for the mini-row/col/diag win checks.
     """

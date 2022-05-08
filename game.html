@@ -86,7 +86,8 @@
 				document.getElementById('turn_number').innerHTML = `Turn: Player ${resp.turn + 1 || 1}`;
 				await new Promise(r => setTimeout(r, 1000));
 				resp = await fetch(`${document.location.origin}/getGame?game=${gid}`).then(r => r.json());
-				if (!on.content) {
+				console.log(resp.players)
+				if (resp.players.every(e => e) && !on.content && resp.players.length > 1) {
 					on.content = resp.players.filter(p => p != name)[0];
 					let pl = (n) => `${n} (Player ${resp.players.indexOf(n) + 1})`;
 					document.getElementById('div_name').innerHTML = `Username: ${pl(name)}<br>Opponent: ${pl(on.content)}`;
