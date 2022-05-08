@@ -68,8 +68,6 @@
 				return alert(resp.message);
 			}
 			document.getElementById(elem).innerHTML = resp.move;
-			if (resp.ended[0])
-				alert(resp.ended[1] ? "Tie game!" : resp.player + " wins!");
 		}
 		async function setPlayer(name) {
 			let gid = document.getElementById('game_id').content;
@@ -82,21 +80,21 @@
 			document.getElementById('div_name').innerHTML = `Username: ${name}<br>Opponent: Waiting for opponent to join...`;
 			document.getElementById('player_name').content = name;
 			let on = document.getElementById('opponent_name');
-			let ended = false;
-			while (!ended) {
+			let ended = [false, false];
+			while (!ended[0]) {
 				await buildBoard(gid);
 				document.getElementById('turn_number').innerHTML = `Turn: Player ${resp.turn + 1 || 1}`;
 				await new Promise(r => setTimeout(r, 1000));
 				resp = await fetch(`${document.location.origin}/getGame?game=${gid}`).then(r => r.json());
-				if (resp.players.length > 1 && !on.content) {
+				if (!on.content) {
 					on.content = resp.players.filter(p => p != name)[0];
 					let pl = (n) => `${n} (Player ${resp.players.indexOf(n) + 1})`;
 					document.getElementById('div_name').innerHTML = `Username: ${pl(name)}<br>Opponent: ${pl(on.content)}`;
 					document.getElementById('share_button').remove();
 				}
+				ended = resp.ended;
 			}
-			ended = resp.ended[0];
-			alert('Game ended!');
+			alert("Game ended!<br>" + (resp.ended[1] ? "Tie game!" : resp.player + " wins!"));
 		}
 		async function buildBoard(game) {
 			let resp = await fetch(`${document.location.origin}/getBoard?game=${game}`);
