@@ -19,7 +19,9 @@ x = "XO"
 @app.route("/")
 def home():
     """index"""
-    soup = bs4.BeautifulSoup("index.html", "html.parser")
+    soup = bs4.BeautifulSoup(
+        open("index.html", "r", encoding="utf-8").read(), "html.parser"
+    )
     body = soup.new_tag("body")
     start_new = soup.new_tag(
         "input",
