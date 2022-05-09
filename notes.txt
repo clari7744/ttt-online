@@ -7,3 +7,10 @@ todo:
 - figure out how to privatize purgeGames
 - css - make disabled buttons actually look disabled n other stuff
 - center stuff
+- fix undefined wins
+- add X/O to player 1/2
+- enter name: [Text box] [1 Player] [2 Player] (only when starting new)
+- cap username length
+- room instead of username on index/join?
+- make newGame and joinGame separate pages that will redirect to /game
+- gonna make game have an &user, maybe have a secret for that eventually...?

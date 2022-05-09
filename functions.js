@@ -4,10 +4,9 @@ function createElement(name, options) {
         element.setAttribute(k, v);
     return element
 }
-async function setSpace(elem) {
+async function setSpace(elem, name) {
     let args = `game=${document.getElementById('game_id').content}&space=${elem}`;
-    let n = document.getElementById('player_name').content
-    if (n) args += `&user=${n}`;
+    if (name) args += `&user=${name}`;
     let resp = await fetch(`${document.location.origin}/setSpace?${args}`)
     let s = resp.status;
     resp = await resp.json();
@@ -16,35 +15,51 @@ async function setSpace(elem) {
     }
     document.getElementById(elem).innerHTML = resp.move;
 }
-async function setPlayer(name) {
-    let gid = document.getElementById('game_id').content;
-    resp = await fetch(`${document.location.origin}/setPlayer?game=${gid}&user=${name}&playerNum=${document.getElementById('player_num').content}`);
+async function addPlayer(gid, name, aiGame = false) {
+    resp = await fetch(`${document.location.origin}/addPlayer?game=${gid}&user=${name}&ai=${aiGame}`);
     s = resp.status;
     resp = await resp.json();
     if (s != 200) {
         return alert(resp.message);
     }
-    document.getElementById('share_button').removeAttribute('disabled');
+    location.href = `${document.location.origin}/game?game=${gid}&user=${name}&ai=${aiGame}`;
+    //await runGame(gid, name, aiGame);
+}
+async function runGame(gid, name, aiGame = false) {
     document.getElementById('div_name').innerHTML = `Username: ${name}`
     document.getElementById('div_opponent').innerHTML = `Opponent: Waiting for opponent...`
     document.getElementById('player_name').content = name;
+    document.querySelector('body').appendChild(createElement("input", {
+        type: "button",
+        value: "Share",
+        id: "share_button",
+        onclick: `share('${gid}');`,
+    }))
     let on = document.getElementById('opponent_name');
     let ended = [false, false];
+    let resp;
     while (!ended[0]) {
+        resp = await fetch(`${document.location.origin}/getGame?game=${gid}`).then(r => r.json());
         await buildBoard(gid);
         document.getElementById('turn_number').innerHTML = `Turn: Player ${resp.turn + 1 || 1}`;
         await new Promise(r => setTimeout(r, 1000));
-        resp = await fetch(`${document.location.origin}/getGame?game=${gid}`).then(r => r.json());
-        if (resp.players.every(e => e) && !on.content && resp.players.length > 1) {
-            on.content = resp.players.filter(p => p != name)[0];
+        if (resp.ai_game && resp.turn == 1) {
+            let available = [];
+            for (let [r, vals] of Object.entries(resp.board))
+                for (let [c, val] of Object.entries(vals))
+                    if (val == '') available.push(`${r}${parseInt(c)+1}`);
+            await setSpace(available[Math.floor(Math.random() * available.length)], "__AI__");
+        }
+        if (resp.players.every(e => e) && !on.content && (resp.players.length > 1 || resp.ai_game)) {
+            on.content = resp.players.filter(p => p != name)[0] || "__AI__";
             let pl = (n) => `${n} (Player ${resp.players.indexOf(n) + 1})`;
-    document.getElementById('div_name').innerHTML = `Username: ${pl(name)}`
+            document.getElementById('div_name').innerHTML = `Username: ${pl(name)}`
             document.getElementById('div_opponent').innerHTML = `Opponent: ${pl(on.content)}`;
             document.getElementById('share_button').remove();
         }
         ended = resp.ended;
     }
-    alert("Game ended!\n" + (resp.ended[1] ? "Tie game!" : resp.players[resp.turn] + " wins!"));
+    alert("Game ended!\n" + (resp.ended[1] ? "Tie game!" : resp.players[Number(!resp.turn)] + " wins!"));
 }
 async function buildBoard(game) {
     let resp = await fetch(`${document.location.origin}/getBoard?game=${game}`);
@@ -61,7 +76,9 @@ async function buildBoard(game) {
         for (let [i, c] of Object.entries("123")) {
             let col = createElement('td', { id: `${r}${c}` });
             if (!resp[r][i])
-                col.appendChild(createElement("input", { type: 'button', id: `${r}${c}b`, value: " ", onclick: `setSpace("${r}${c}")`, class: "ttt_space" }));
+                col.appendChild(createElement("input", {
+                    type: 'button', id: `${r}${c}b`, value: " ", onclick: `setSpace("${r}${c}", document.getElementById('player_name').content)`, class: "ttt_space"
+                }));
             else {
                 col.innerHTML = resp[r][i];
             }
@@ -73,7 +90,7 @@ async function buildBoard(game) {
 
 }
 function share(game) {
-    let url = `${document.location.origin}/game?game=${game}`;
+    let url = `${document.location.origin}/joinGame?game=${game}`;
     const elem = document.createElement('textarea');
     elem.value = `Play TicTacToe with ${document.getElementById('player_name').content}! Join at ${url}`;
     document.body.appendChild(elem);
