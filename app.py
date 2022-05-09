@@ -19,7 +19,7 @@ def args(_args, *wanted):
     """
     Validates arguments.
     """
-    return (_args.get(x, None).strip() for x in wanted)
+    return (_args.get(x, '').strip() for x in wanted)
 
 
 @app.route("/")
@@ -106,8 +106,8 @@ def join_game():
     Joins game.
     """
     game, = args(flask.request.args, "game")
-    if not (res := check_game(game))[0]:
-        return res
+    if not check_game(game)[0]:
+        refresh('game_not_found')
     if game and (not games.get(game) or len(games.get(game).get("players", [])) >= 2):
         return refresh("game_not_found_or_full")
     soup = bs4.BeautifulSoup(
@@ -134,13 +134,17 @@ def join_game():
 @app.route("/game")
 def active_game():
     """Active game"""
-    game, user, ai = args(flask.request.args, "game", "user", "ai")
+    game, user = args(flask.request.args, "game", "user")
+    if not check_game(game)[0]:
+        return refresh('game_not_found')
+    if not (res := check_user(game, user))[0]:
+        return refresh('_'.join(res[1].response["message"].lower().split(" ")))
     soup = bs4.BeautifulSoup(
         open("game.html", "r", encoding="utf-8").read(), "html.parser"
     )
     meta(soup, game)
     s = soup.new_tag("script")
-    s.append(f"runGame('{game}', '{user}', '{ai=='true'}');")
+    s.append(f"runGame('{game}', '{user}');")
     soup.find("body").append(s)
     return soup.prettify()
 
@@ -153,7 +157,7 @@ def set_space():
     game, user, space = args(flask.request.args, "game", "user", "space")
     if not (res := check_game(game))[0]:
         return res[1]
-    if not (res := check_user(user))[0]:
+    if not (res := check_user(game, user))[0]:
         return res[1]
     if not space:
         return flask.Response(
@@ -171,7 +175,7 @@ def set_space():
     game = games.get(game)
     if game["ended"][0]:
         return flask.Response(
-            json.dumps({"message": "Game ended"}),
+            json.dumps({"message": "Game is ended"}),
             status=400,
             mimetype="application/json",
         )
@@ -219,12 +223,8 @@ def add_player():
     game, user, ai = args(flask.request.args, "game", "user", "ai")
     if not (res := check_game(game))[0]:
         return res[1]
-    if user in games[game]["players"]:
-        return flask.Response(
-            json.dumps({"message": "Player already exists"}),
-            status=400,
-            mimetype="application/json",
-        )
+    if not (res := check_user(game, user, True))[0]:
+        return res[1]
     games[game]["players"].append(user)
     if ai == "true":
         games[game]["ai_game"] = True
@@ -266,9 +266,11 @@ def purge_games():
     """
     Purge games
     """
-    while len(games) > 0:
-        del games[list(games.keys())[0]]
-    return flask.redirect("/")
+    if (flask.request.args.get('pwd', None) == 'pg_gs'):
+        while len(games) > 0:
+            del games[list(games.keys())[0]]
+        return flask.redirect("/")
+    return refresh('invalid_purge_password')
 
 
 @app.errorhandler(404)
@@ -296,13 +298,19 @@ def check_game(game):
     return True, None
 
 
-def check_user(user):
+def check_user(gameid, user, add=False):
     """
     Validates user existence.
     """
     if not user:
         return False, flask.Response(
             json.dumps({"message": "Username is required"}),
+            status=400,
+            mimetype="application/json",
+        )
+    if (user in games.get(gameid)['players']) == add:
+        return False, flask.Response(
+            json.dumps({"message": "User not in game" if not add else "User already in game"}),
             status=400,
             mimetype="application/json",
         )

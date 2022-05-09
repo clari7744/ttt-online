@@ -16,15 +16,15 @@ async function setSpace(elem, name) {
     document.getElementById(elem).innerHTML = resp.move;
 }
 async function addPlayer(gid, name, aiGame = false) {
-    resp = await fetch(`${document.location.origin}/addPlayer?game=${gid}&user=${name}&ai=${aiGame}`);
+    resp = await fetch(`${document.location.origin}/addPlayer?game=${gid}&user=${name}`);//&ai=${aiGame}`);
     s = resp.status;
     resp = await resp.json();
     if (s != 200) {
         return alert(resp.message);
     }
-    location.href = `${document.location.origin}/game?game=${gid}&user=${name}&ai=${aiGame}`;
+    location.href = `${document.location.origin}/game?game=${gid}&user=${name}`;//&ai=${aiGame}`;
 }
-async function runGame(gid, name, aiGame = false) {
+async function runGame(gid, name) {
     document.getElementById('div_name').innerHTML = `Username: ${name}`
     document.getElementById('div_opponent').innerHTML = `Opponent: Waiting for opponent...`
     document.getElementById('player_name').content = name;

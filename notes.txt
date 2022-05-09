@@ -2,8 +2,5 @@
 - look up jsonp
 
 todo:
-- validate users x games - when game ID is passed be sure user exists in game
-- figure out how to privatize purgeGames
-- css - make disabled buttons actually look disabled n other stuff
 - room instead of username on index/join?
 - secret for /game&user...?
