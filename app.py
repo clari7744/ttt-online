@@ -49,6 +49,11 @@ def home():
     soup.find("html").append(body)
     return soup.prettify()
 
+@app.route("/style.css")
+def style():
+    """style"""
+    return flask.send_file("style.css")
+
 @app.route("/functions.js")
 def functions_js():
     """functions"""
