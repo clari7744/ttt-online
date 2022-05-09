@@ -49,6 +49,10 @@ def home():
     soup.find("html").append(body)
     return soup.prettify()
 
+@app.route("/functions.js")
+def functions_js():
+    """functions"""
+    return flask.send_file("functions.js")
 
 @app.route("/game")
 def active_game():
