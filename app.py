@@ -13,7 +13,6 @@ from checks_gets import end_check
 app = flask.Flask(__name__)
 
 games = {}
-x = "XO"
 
 
 def args(_args, *wanted):
@@ -57,10 +56,12 @@ def home():
     return soup.prettify()
 
 
-def meta(soup, game, num):
+def meta(soup, game):
+    """
+    Adds meta tags.
+    """
     for i, v in dict(
         game_id=game,
-        #        player_num=num,
         player_name="",
         opponent_name="",
     ).items():
@@ -91,10 +92,11 @@ def new_game():
                 id=i + "_player",
                 type="submit",
                 value=n + " Player",
-                onclick=f"addPlayer('{game}', document.getElementById('input_name').value.trim().slice(0,100){a});",
+                onclick=f"addPlayer('{game}', "
+                f"document.getElementById('input_name').value.trim().slice(0,100){a});",
             )
         )
-    meta(soup, game, 1)
+    meta(soup, game)
     return soup.prettify()
 
 
@@ -118,13 +120,14 @@ def join_game():
             id="join_game",
             type="submit",
             value="Join Game",
-            onclick=f"addPlayer('{game}', document.getElementById('input_name').value.trim().slice(0,100));",
+            onclick=f"addPlayer('{game}', "
+            "document.getElementById('input_name').value.trim().slice(0,100));",
         )
     )
     od = soup.find("div", id="div_opponent", recursive=True)
     if n := games.get(game, {}).get("players", [""])[0]:
         od.append(f"Opponent: {n}")
-    meta(soup, game, 2)
+    meta(soup, game)
     return soup.prettify()
 
 
@@ -135,22 +138,11 @@ def active_game():
     soup = bs4.BeautifulSoup(
         open("game.html", "r", encoding="utf-8").read(), "html.parser"
     )
-    meta(soup, game, games[game]["players"].index(user) + 1)
+    meta(soup, game)
     s = soup.new_tag("script")
     s.append(f"runGame('{game}', '{user}', '{ai=='true'}');")
     soup.find("body").append(s)
     return soup.prettify()
-    # body = soup.find("body")
-    # body.append(
-    #    soup.new_tag(
-    #        "input",
-    #        type="button",
-    #        value="Share",
-    #        id="share_button",
-    #        onclick=f"share('{game}');",
-    #    )
-    # )
-    # return soup.prettify()
 
 
 @app.route("/setSpace")
@@ -202,13 +194,13 @@ def set_space():
             status=400,
             mimetype="application/json",
         )
-    game["board"][space[0]][int(space[1]) - 1] = x[s]
+    game["board"][space[0]][int(space[1]) - 1] = "XO"[s]
     game["turn"] = not s
-    game["ended"] = end_check(game["board"], x[game["turn"] - 1])
+    game["ended"] = end_check(game["board"], "XO"[game["turn"] - 1])
     return flask.Response(
         json.dumps(
             {
-                "move": x[s],
+                "move": "XO"[s],
                 "ended": game["ended"][0],
                 "tie": game["ended"][1],
                 "player": game["players"][s],
@@ -233,7 +225,6 @@ def add_player():
             status=400,
             mimetype="application/json",
         )
-    # games[game]["players"][int(player_num) - 1] = user
     games[game]["players"].append(user)
     if ai == "true":
         games[game]["ai_game"] = True
@@ -242,29 +233,6 @@ def add_player():
         json.dumps({"message": "Player set"}), status=200, mimetype="application/json"
     )
 
-
-# @app.route("/checkWin")
-# def check_win():
-#    """
-#    Check win
-#    """
-#    game, user = args(flask.request.args, "game", "user")
-#    if not (res := check_game(game))[0]:
-#        return res[1]
-#    if not (res := check_user(user))[0]:
-#        return res[1]
-#    game = games[game]
-#    print(game["board"])
-#    return flask.Response(
-#        json.dumps(
-#            {
-#                "won": end_check(game["board"], x[game["turn"]])[0],
-#                "message": game["players"][game["turn"]],
-#            }
-#        ),
-#        status=200,
-#        mimetype="application/json",
-#    )
 
 
 @app.route("/getBoard")
@@ -342,6 +310,9 @@ def check_user(user):
 
 
 def refresh(err):
+    """
+    Wrapper for refresh meta tag.
+    """
     return f"<meta http-equiv='Refresh' content=\"0; url='/?err_code={err}'\">"
 
 

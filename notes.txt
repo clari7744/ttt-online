@@ -3,14 +3,7 @@
 
 todo:
 - validate users x games - when game ID is passed be sure user exists in game
-- add AI option
 - figure out how to privatize purgeGames
 - css - make disabled buttons actually look disabled n other stuff
-- center stuff
-- fix undefined wins
-- add X/O to player 1/2
-- enter name: [Text box] [1 Player] [2 Player] (only when starting new)
-- cap username length
 - room instead of username on index/join?
-- make newGame and joinGame separate pages that will redirect to /game
-- gonna make game have an &user, maybe have a secret for that eventually...?
+- secret for /game&user...?

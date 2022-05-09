@@ -23,7 +23,6 @@ async function addPlayer(gid, name, aiGame = false) {
         return alert(resp.message);
     }
     location.href = `${document.location.origin}/game?game=${gid}&user=${name}&ai=${aiGame}`;
-    //await runGame(gid, name, aiGame);
 }
 async function runGame(gid, name, aiGame = false) {
     document.getElementById('div_name').innerHTML = `Username: ${name}`
@@ -52,7 +51,7 @@ async function runGame(gid, name, aiGame = false) {
         }
         if (resp.players.every(e => e) && !on.content && (resp.players.length > 1 || resp.ai_game)) {
             on.content = resp.players.filter(p => p != name)[0] || "__AI__";
-            let pl = (n) => `${n} (Player ${resp.players.indexOf(n) + 1})`;
+            let pl = (n) => `${n} (Player ${resp.players.indexOf(n) + 1} - ${"XO"[resp.players.indexOf(n)]})`;
             document.getElementById('div_name').innerHTML = `Username: ${pl(name)}`
             document.getElementById('div_opponent').innerHTML = `Opponent: ${pl(on.content)}`;
             document.getElementById('share_button').remove();
