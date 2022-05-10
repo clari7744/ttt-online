@@ -15,14 +15,14 @@ async function setSpace(elem, name) {
     }
     document.getElementById(elem).innerHTML = resp.move;
 }
-async function addPlayer(gid, name, aiGame = false) {
-    resp = await fetch(`${document.location.origin}/addPlayer?game=${gid}&user=${name}`);//&ai=${aiGame}`);
+async function joinGame(gid, name, aiGame = false) {
+    resp = await fetch(`${document.location.origin}/addPlayer?game=${gid}&user=${name}&ai=${aiGame}`);
     s = resp.status;
     resp = await resp.json();
     if (s != 200) {
         return alert(resp.message);
     }
-    location.href = `${document.location.origin}/game?game=${gid}&user=${name}`;//&ai=${aiGame}`;
+    location.href = `${document.location.origin}/game?game=${gid}&user=${name}`;
 }
 async function runGame(gid, name) {
     document.getElementById('div_name').innerHTML = `Username: ${name}`
@@ -36,21 +36,24 @@ async function runGame(gid, name) {
     }))
     let on = document.getElementById('opponent_name');
     let ended = [false, false];
-    let resp;
-    while (!ended[0]) {
+    let resp = await fetch(`${document.location.origin}/getGame?game=${gid}`).then(r=>r.json());
+    let ind = resp.players.indexOf(name);
+    let nameChanged;
+    while (!ended[0] && !nameChanged) {
         resp = await fetch(`${document.location.origin}/getGame?game=${gid}`).then(r => r.json());
+        if (resp.players[ind] != name) nameChanged = false;
         await buildBoard(gid);
         document.getElementById('turn_number').innerHTML = `Turn: Player ${resp.turn + 1 || 1}`;
         await new Promise(r => setTimeout(r, 1000));
-        if (resp.ai_game && resp.turn == 1) {
+        if (resp.ai_game && resp.turn == 1 && !resp.ended[0]) {
             let available = [];
             for (let [r, vals] of Object.entries(resp.board))
                 for (let [c, val] of Object.entries(vals))
-                    if (val == '') available.push(`${r}${parseInt(c)+1}`);
-            await setSpace(available[Math.floor(Math.random() * available.length)], "__AI__");
+                    if (val == '') available.push(`${r}${parseInt(c) + 1}`);
+            await setSpace(available[Math.floor(Math.random() * available.length)], "AI");
         }
         if (resp.players.every(e => e) && !on.content && (resp.players.length > 1 || resp.ai_game)) {
-            on.content = resp.players.filter(p => p != name)[0] || "__AI__";
+            on.content = resp.players.filter(p => p != name)[0] || "AI";
             let pl = (n) => `${n} (Player ${resp.players.indexOf(n) + 1} - ${"XO"[resp.players.indexOf(n)]})`;
             document.getElementById('div_name').innerHTML = `Username: ${pl(name)}`
             document.getElementById('div_opponent').innerHTML = `Opponent: ${pl(on.content)}`;
@@ -58,7 +61,7 @@ async function runGame(gid, name) {
         }
         ended = resp.ended;
     }
-    alert("Game ended!\n" + (resp.ended[1] ? "Tie game!" : resp.players[Number(!resp.turn)] + " wins!"));
+    if (!nameChanged)alert("Game ended!\n" + (resp.ended[1] ? "Tie game!" : resp.players[Number(!resp.turn)] + " wins!"));
 }
 async function buildBoard(game) {
     let resp = await fetch(`${document.location.origin}/getBoard?game=${game}`);
@@ -88,6 +91,19 @@ async function buildBoard(game) {
     board.appendChild(table);
 
 }
+async function changeName(game, user) {
+    let newName = prompt('Enter new username:');
+    if (!newName) return;
+    let resp = await fetch(`${document.location.origin}/changeName?game=${game}&user=${user}&name=${newName}`);
+    s = resp.status;
+    resp = await resp.json();
+    if (s != 200) {
+        return alert(resp.message);
+    }
+    alert(`Name changed to ${newName}`);
+    location.href = `${document.location.origin}/game?game=${game}&user=${newName}`;
+}
+
 function share(game) {
     let url = `${document.location.origin}/joinGame?game=${game}`;
     const elem = document.createElement('textarea');

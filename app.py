@@ -19,7 +19,7 @@ def args(_args, *wanted):
     """
     Validates arguments.
     """
-    return (_args.get(x, '').strip() for x in wanted)
+    return (_args.get(x, "").strip() for x in wanted)
 
 
 @app.route("/")
@@ -28,7 +28,7 @@ def home():
     soup = bs4.BeautifulSoup(
         open("index.html", "r", encoding="utf-8").read(), "html.parser"
     )
-    body = soup.new_tag("body")
+    body = soup.find("body", recursive=True)
     for gid, game in games.items():
         if len(game["players"]) != 1 or game["ended"][0] or not any(game["players"]):
             continue
@@ -52,7 +52,6 @@ def home():
         onclick="location.href='/newGame';",
     )
     body.append(start_new)
-    soup.find("html").append(body)
     return soup.prettify()
 
 
@@ -92,7 +91,7 @@ def new_game():
                 id=i + "_player",
                 type="submit",
                 value=n + " Player",
-                onclick=f"addPlayer('{game}', "
+                onclick=f"joinGame('{game}', "
                 f"document.getElementById('input_name').value.trim().slice(0,100){a});",
             )
         )
@@ -105,9 +104,9 @@ def join_game():
     """
     Joins game.
     """
-    game, = args(flask.request.args, "game")
+    (game,) = args(flask.request.args, "game")
     if not check_game(game)[0]:
-        refresh('game_not_found')
+        refresh("game_not_found")
     if game and (not games.get(game) or len(games.get(game).get("players", [])) >= 2):
         return refresh("game_not_found_or_full")
     soup = bs4.BeautifulSoup(
@@ -120,7 +119,7 @@ def join_game():
             id="join_game",
             type="submit",
             value="Join Game",
-            onclick=f"addPlayer('{game}', "
+            onclick=f"joinGame('{game}', "
             "document.getElementById('input_name').value.trim().slice(0,100));",
         )
     )
@@ -136,13 +135,23 @@ def active_game():
     """Active game"""
     game, user = args(flask.request.args, "game", "user")
     if not check_game(game)[0]:
-        return refresh('game_not_found')
+        return refresh("game_not_found")
     if not (res := check_user(game, user))[0]:
-        return refresh('_'.join(res[1].response["message"].lower().split(" ")))
+        return refresh("_".join(res[1].response["message"].lower().split(" ")))
     soup = bs4.BeautifulSoup(
         open("game.html", "r", encoding="utf-8").read(), "html.parser"
     )
     meta(soup, game)
+    chnm = soup.find("div", id="change_name", recursive=True)
+    chnm.append(
+        soup.new_tag(
+            "input",
+            id="name_change_button",
+            type="button",
+            value="Change Username",
+            onclick=f"changeName('{game}', '{user}');",
+        )
+    )
     s = soup.new_tag("script")
     s.append(f"runGame('{game}', '{user}');")
     soup.find("body").append(s)
@@ -228,11 +237,34 @@ def add_player():
     games[game]["players"].append(user)
     if ai == "true":
         games[game]["ai_game"] = True
-        games[game]["players"].append("__AI__")
+        games[game]["players"].append("AI")
     return flask.Response(
-        json.dumps({"message": "Player set"}), status=200, mimetype="application/json"
+        json.dumps(
+            {
+                "message": f"Player {games[game]['players'].index(user)} added with name {user}"
+            }
+        ),
+        status=200,
+        mimetype="application/json",
     )
 
+
+@app.route("/changeName")
+def set_player():
+    """
+    Change player name
+    """
+    game, user, name = args(flask.request.args, "game", "user", "name")
+    if not (res := check_game(game))[0]:
+        return res[1]
+    if not (res := check_user(game, user))[0]:
+        return res[1]
+    games[game]["players"][games[game]["players"].index(user)] = name
+    return flask.Response(
+        json.dumps({"message": f"Player name changed from {user} to {name}"}),
+        status=200,
+        mimetype="application/json",
+    )
 
 
 @app.route("/getBoard")
@@ -266,11 +298,11 @@ def purge_games():
     """
     Purge games
     """
-    if (flask.request.args.get('pwd', None) == 'pg_gs'):
+    if flask.request.args.get("pwd", None) == "pg_gs":
         while len(games) > 0:
             del games[list(games.keys())[0]]
         return flask.redirect("/")
-    return refresh('invalid_purge_password')
+    return refresh("invalid_purge_password")
 
 
 @app.errorhandler(404)
@@ -308,9 +340,11 @@ def check_user(gameid, user, add=False):
             status=400,
             mimetype="application/json",
         )
-    if (user in games.get(gameid)['players']) == add:
+    if (user in games.get(gameid)["players"]) == add:
         return False, flask.Response(
-            json.dumps({"message": "User not in game" if not add else "User already in game"}),
+            json.dumps(
+                {"message": "User not in game" if not add else "User already in game"}
+            ),
             status=400,
             mimetype="application/json",
         )
@@ -322,6 +356,14 @@ def refresh(err):
     Wrapper for refresh meta tag.
     """
     return f"<meta http-equiv='Refresh' content=\"0; url='/?err_code={err}'\">"
+
+
+@app.route("/about")
+def about():
+    """
+    About page
+    """
+    return flask.send_file("about.html")
 
 
 @app.route("/style.css")
