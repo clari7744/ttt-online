@@ -30,10 +30,10 @@ def home():
     )
     body = soup.find("body", recursive=True)
     for gid, game in games.items():
-        if len(game["players"]) != 1 or game["ended"][0] or not any(game["players"]):
+        if len(game["players"]) != 1 or game["ended"] or not any(game["players"]):
             continue
         join_game_div = soup.new_tag("div", id="join_game_div")
-        join_game_div.append(f"Player: {game['players'][0]}")
+        join_game_div.append(f"Room Name: {game['name'] or game['players'][0]}")
         join_game_div.append(
             soup.new_tag(
                 "input",
@@ -73,13 +73,15 @@ def new_game():
     Creates new game.
     """
     game = uuid.uuid1().hex
-    games[game] = {
-        "board": {"a": ["", "", ""], "b": ["", "", ""], "c": ["", "", ""]},
-        "turn": random.choice((True, False)),
-        "players": [],
-        "ended": (False, False),
-        "ai_game": False,
-    }
+    games[game] = dict(
+        name="",
+        board={"a": ["", "", ""], "b": ["", "", ""], "c": ["", "", ""]},
+        turn=random.choice((True, False)),
+        players=[],
+        ended=False,
+        tie=False,
+        ai_game=False,
+    )
     soup = bs4.BeautifulSoup(
         open("game.html", "r", encoding="utf-8").read(), "html.parser"
     )
@@ -152,6 +154,15 @@ def active_game():
             onclick=f"changeName('{game}', '{user}');",
         )
     )
+    chnm.append(
+        soup.new_tag(
+            "input",
+            id="room_name_change_button",
+            type="button",
+            value="Change Room Name",
+            onclick=f"changeRoomName('{game}');",
+        )
+    )
     s = soup.new_tag("script")
     s.append(f"runGame('{game}', '{user}');")
     soup.find("body").append(s)
@@ -182,7 +193,7 @@ def set_space():
             mimetype="application/json",
         )
     game = games.get(game)
-    if game["ended"][0]:
+    if game["ended"]:
         return flask.Response(
             json.dumps({"message": "Game is ended"}),
             status=400,
@@ -209,13 +220,12 @@ def set_space():
         )
     game["board"][space[0]][int(space[1]) - 1] = "XO"[s]
     game["turn"] = not s
-    game["ended"] = end_check(game["board"], "XO"[game["turn"] - 1])
+    game["ended"], game["tie"] = end_check(game["board"], "XO"[game["turn"] - 1])
     return flask.Response(
         json.dumps(
             {
                 "move": "XO"[s],
-                "ended": game["ended"][0],
-                "tie": game["ended"][1],
+                "ended": game["ended"],
                 "player": game["players"][s],
             }
         ),
@@ -234,7 +244,7 @@ def add_player():
         return res[1]
     if not (res := check_user(game, user, True))[0]:
         return res[1]
-    games[game]["players"].append(user)
+    games[game].update(players=[user], name=user)
     if ai == "true":
         games[game]["ai_game"] = True
         games[game]["players"].append("AI")
@@ -250,7 +260,7 @@ def add_player():
 
 
 @app.route("/changeName")
-def set_player():
+def change_name():
     """
     Change player name
     """
@@ -262,6 +272,23 @@ def set_player():
     games[game]["players"][games[game]["players"].index(user)] = name
     return flask.Response(
         json.dumps({"message": f"Player name changed from {user} to {name}"}),
+        status=200,
+        mimetype="application/json",
+    )
+
+
+@app.route("/changeRoomName")
+def change_room_name():
+    """
+    Change player name
+    """
+    game, name = args(flask.request.args, "game", "name")
+    if not (res := check_game(game))[0]:
+        return res[1]
+    ogname = games[game]["name"]
+    games[game]["name"] = name
+    return flask.Response(
+        json.dumps({"message": f"Room name changed from {ogname} to {name}"}),
         status=200,
         mimetype="application/json",
     )

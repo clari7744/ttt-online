@@ -25,6 +25,8 @@ async function joinGame(gid, name, aiGame = false) {
     location.href = `${document.location.origin}/game?game=${gid}&user=${name}`;
 }
 async function runGame(gid, name) {
+    let resp = await fetch(`${document.location.origin}/getGame?game=${gid}`).then(r => r.json());
+    document.getElementById('room_name').innerHTML = `Room Name: ${resp.name}`;
     document.getElementById('div_name').innerHTML = `Username: ${name}`
     document.getElementById('div_opponent').innerHTML = `Opponent: Waiting for opponent...`
     document.getElementById('player_name').content = name;
@@ -35,17 +37,15 @@ async function runGame(gid, name) {
         onclick: `share('${gid}');`,
     }))
     let on = document.getElementById('opponent_name');
-    let ended = [false, false];
-    let resp = await fetch(`${document.location.origin}/getGame?game=${gid}`).then(r=>r.json());
     let ind = resp.players.indexOf(name);
     let nameChanged;
-    while (!ended[0] && !nameChanged) {
+    while (!resp.ended && !nameChanged) {
         resp = await fetch(`${document.location.origin}/getGame?game=${gid}`).then(r => r.json());
         if (resp.players[ind] != name) nameChanged = false;
         await buildBoard(gid);
         document.getElementById('turn_number').innerHTML = `Turn: Player ${resp.turn + 1 || 1}`;
         await new Promise(r => setTimeout(r, 1000));
-        if (resp.ai_game && resp.turn == 1 && !resp.ended[0]) {
+        if (resp.ai_game && resp.turn == 1 && !resp.ended) {
             let available = [];
             for (let [r, vals] of Object.entries(resp.board))
                 for (let [c, val] of Object.entries(vals))
@@ -59,9 +59,8 @@ async function runGame(gid, name) {
             document.getElementById('div_opponent').innerHTML = `Opponent: ${pl(on.content)}`;
             document.getElementById('share_button').remove();
         }
-        ended = resp.ended;
     }
-    if (!nameChanged)alert("Game ended!\n" + (resp.ended[1] ? "Tie game!" : resp.players[Number(!resp.turn)] + " wins!"));
+    if (!nameChanged) alert("Game ended!\n" + (resp.tie ? "Tie game!" : resp.players[Number(!resp.turn)] + " wins!"));
 }
 async function buildBoard(game) {
     let resp = await fetch(`${document.location.origin}/getBoard?game=${game}`);
@@ -102,6 +101,18 @@ async function changeName(game, user) {
     }
     alert(`Name changed to ${newName}`);
     location.href = `${document.location.origin}/game?game=${game}&user=${newName}`;
+}
+async function changeRoomName(game) {
+    let newName = prompt('Enter room name:');
+    if (!newName) return;
+    document.getElementById('room_name').innerHTML = `Room Name: ${newName}`;
+    let resp = await fetch(`${document.location.origin}/changeRoomName?game=${game}&name=${newName}`);
+    s = resp.status;
+    resp = await resp.json();
+    if (s != 200) {
+        return alert(resp.message);
+    }
+    alert(`Room name changed to ${newName}`);
 }
 
 function share(game) {
