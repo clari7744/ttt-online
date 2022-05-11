@@ -3,3 +3,6 @@
 
 todo:
 - secret for /game&user...?
+- BRACKETING FEATURE!!!! SINCE ROOMS EXIST!!!
+ - or just switching out after each game based on who's participating
+ - need an any-length list of playerPairs, and a 2-length list of currentPlayers, that way `not turn` won't break, and i can set `activePair` dynamically

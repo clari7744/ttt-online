@@ -279,7 +279,15 @@ def change_name():
         return res[1]
     if not (res := check_user(game, user))[0]:
         return res[1]
-    games[game]["players"][games[game]["players"].index(user)] = name
+    ps = games[game]["players"]
+    i = ps.index(user)
+    if ps[i - 1] == name:
+        return flask.Response(
+            json.dumps({"message": "Name already taken"}),
+            status=400,
+            mimetype="application/json",
+        )
+    ps[i] = name
     return flask.Response(
         json.dumps({"message": f"Player name changed from {user} to {name}"}),
         status=200,
@@ -296,6 +304,12 @@ def change_room_name():
     if not (res := check_game(game))[0]:
         return res[1]
     ogname = games[game]["name"]
+    if any(filter(lambda pair: pair[1]['name'] == name and pair[0] != game, games.items())):
+        return flask.Response(
+            json.dumps({"message": "Room name already taken"}),
+            status=400,
+            mimetype="application/json",
+        )
     games[game]["name"] = name
     return flask.Response(
         json.dumps({"message": f"Room name changed from {ogname} to {name}"}),
