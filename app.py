@@ -33,7 +33,7 @@ def home():
         if len(game["players"]) != 1 or game["ended"] or not any(game["players"]):
             continue
         join_game_div = soup.new_tag("div", id="join_game_div")
-        join_game_div.append(f"Room Name: {game['name'] or game['players'][0]}")
+        join_game_div.append(f"Room Name: {game['name']}")
         join_game_div.append(
             soup.new_tag(
                 "input",
@@ -114,8 +114,13 @@ def join_game():
     soup = bs4.BeautifulSoup(
         open("game.html", "r", encoding="utf-8").read(), "html.parser"
     )
-    name = soup.find("div", id="div_name", recursive=True)
-    name.append(
+    soup.find("div", id="room_name", recursive=True).append(
+        f"Room Name: {games[game]['name']}"
+    )
+    soup.find("div", id="join_opponent", recursive=True).append(
+        f"Opponent: {games[game]['players'][0]}"
+    )
+    soup.find("div", id="div_name", recursive=True).append(
         soup.new_tag(
             "input",
             id="join_game",
@@ -125,9 +130,6 @@ def join_game():
             "document.getElementById('input_name').value.trim().slice(0,100));",
         )
     )
-    od = soup.find("div", id="div_opponent", recursive=True)
-    if n := games.get(game, {}).get("players", [""])[0]:
-        od.append(f"Opponent: {n}")
     meta(soup, game)
     return soup.prettify()
 
@@ -138,8 +140,14 @@ def active_game():
     game, user = args(flask.request.args, "game", "user")
     if not check_game(game)[0]:
         return refresh("game_not_found")
+    if games[game]["ended"]:
+        return refresh("game_ended")
     if not (res := check_user(game, user))[0]:
-        return refresh("_".join(res[1].response["message"].lower().split(" ")))
+        return refresh(
+            "_".join(
+                json.loads(res[1].response[0].decode())["message"].lower().split(" ")
+            )
+        )
     soup = bs4.BeautifulSoup(
         open("game.html", "r", encoding="utf-8").read(), "html.parser"
     )
@@ -244,7 +252,9 @@ def add_player():
         return res[1]
     if not (res := check_user(game, user, True))[0]:
         return res[1]
-    games[game].update(players=[user], name=user)
+    games[game]["players"].append(user)
+    if not games[game]["name"]:
+        games[game]["name"] = user
     if ai == "true":
         games[game]["ai_game"] = True
         games[game]["players"].append("AI")

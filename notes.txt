@@ -2,7 +2,4 @@
 - look up jsonp
 
 todo:
-- room instead of username on index/join?
 - secret for /game&user...?
-
-- check out discord internals (src=), see if i can figure out how to get functions without publicizing

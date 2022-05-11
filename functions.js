@@ -26,7 +26,6 @@ async function joinGame(gid, name, aiGame = false) {
 }
 async function runGame(gid, name) {
     let resp = await fetch(`${document.location.origin}/getGame?game=${gid}`).then(r => r.json());
-    document.getElementById('room_name').innerHTML = `Room Name: ${resp.name}`;
     document.getElementById('div_name').innerHTML = `Username: ${name}`
     document.getElementById('div_opponent').innerHTML = `Opponent: Waiting for opponent...`
     document.getElementById('player_name').content = name;
@@ -41,9 +40,10 @@ async function runGame(gid, name) {
     let nameChanged;
     while (!resp.ended && !nameChanged) {
         resp = await fetch(`${document.location.origin}/getGame?game=${gid}`).then(r => r.json());
+        document.getElementById('room_name').innerHTML = `Room Name: ${resp.name}`;
         if (resp.players[ind] != name) nameChanged = false;
         await buildBoard(gid);
-        document.getElementById('turn_number').innerHTML = `Turn: Player ${resp.turn + 1 || 1}`;
+        document.getElementById('turn_number').innerHTML = `Turn: Player ${resp.turn + 1 || 1}${resp.turn == ind ? " (You)" : ""}`;
         await new Promise(r => setTimeout(r, 1000));
         if (resp.ai_game && resp.turn == 1 && !resp.ended) {
             let available = [];
@@ -103,9 +103,8 @@ async function changeName(game, user) {
     location.href = `${document.location.origin}/game?game=${game}&user=${newName}`;
 }
 async function changeRoomName(game) {
-    let newName = prompt('Enter room name:');
+    let newName = prompt('Enter new room name:');
     if (!newName) return;
-    document.getElementById('room_name').innerHTML = `Room Name: ${newName}`;
     let resp = await fetch(`${document.location.origin}/changeRoomName?game=${game}&name=${newName}`);
     s = resp.status;
     resp = await resp.json();
