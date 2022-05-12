@@ -304,7 +304,9 @@ def change_room_name():
     if not (res := check_game(game))[0]:
         return res[1]
     ogname = games[game]["name"]
-    if any(filter(lambda pair: pair[1]['name'] == name and pair[0] != game, games.items())):
+    if any(
+        filter(lambda pair: pair[1]["name"] == name and pair[0] != game, games.items())
+    ):
         return flask.Response(
             json.dumps({"message": "Room name already taken"}),
             status=400,
