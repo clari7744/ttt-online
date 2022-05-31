@@ -45,3 +45,11 @@ todo:
   - allow users to spectate
 
 - AI decision tree
+
+- "upcoming features" page
+
+- line through images when won...? just need 5 X/Os- blank, LTR, RTL, horizontal, vertical (or figure out how to draw a line on top of an image)
+
+- suggestions page and/or button - just post and `open("suggestions", "a").write()`
+
+- dark mode! 

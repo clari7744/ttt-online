@@ -1,0 +1,184 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    height: 98vh;
+    width: 98%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+#join_game_div {
+    margin-top: 2rem;
+    font-size: 2rem;
+}
+
+#join_game_button {
+    font-size: 1.5rem;
+}
+
+.start_button {
+    margin-top: 2rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    font-size: 2rem;
+}
+
+#share_button {
+    margin-top: 3rem;
+}
+#about_button {
+    margin-top: 2rem;
+}
+
+h1 {
+    font-size: 3em;
+    text-align: center;
+}
+
+table {
+    border-collapse: collapse;
+    height: 20em;
+    width: 20em;
+}
+
+th,
+td {
+    text-align: center;
+    /* border: 0.5px solid black; */
+    width: 3em;
+    height: 3em;
+}
+
+.text {
+    font-size: 5em;
+    width: 100%;
+    height: 3em;
+    text-align: center;
+}
+
+.board_div {
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ttt_space {
+    height: 100%;
+    width: 100%;
+}
+
+.move_img {
+    height: 5em;
+    width: 5em;
+}
+
+/*#footer {
+    /* how do i put this all the way at the bottom? 
+}*/
+
+
+/* Bulb made this section */
+/*The Majority Of Buttons*/
+/*#start_new,
+#home_button,
+#div_name>input,
+#name_change_button,
+#room_name_change_button,
+#join_game_button {
+    padding: 0.5em 1em;
+    border: 5px solid darkgray;
+    color: silver;
+    font-weight: large;
+}*/
+
+/*Name Change Input*/
+/*#div_name>input {
+    outline: none;
+}
+
+#board_div * {
+    border-radius: 0px;
+    background-color: whitesmoke;
+    color: silver;
+}*/
+
+/*The About Button*/
+/*a button {
+    background: transparent;
+    margin-top: 0.75em;
+    border: transparent;
+    text-underline-position: under;
+    text-underline-offset: length;
+    text-decoration: underline silver;
+    color: silver;
+    font-size: 14px;
+}
+
+a button:hover,
+#start_new:hover {
+    animation-name: weak-glow;
+    animation-duration: 3s;
+}
+
+#start_new {
+    animation: harsh-glow alternate 4s;
+    animation-iteration-count: infinite;
+}
+
+#name_change_button,
+#room_name_change_button {
+    margin-top: 1em;
+}
+
+@keyframes weak-glow {
+    from {
+        color: silver;
+    }
+
+    to {
+        color: darkgray;
+    }
+}
+
+@keyframes harsh-glow {
+    0% {
+        background-color: whitesmoke
+    }
+
+    50% {
+        background-color: rgba(255, 255, 255, 0.5);
+    }
+
+    100% {
+        background-color: whitesmoke
+    }
+}
+*/
+/*The Body's Background*/
+/*body {
+    background: whitesmoke;
+}
+
+h1,
+#div_name,
+#div_opponent,
+#room_name,
+#turn_number,
+#join_game_div {
+    color: silver;
+}
+
+p {
+    color: silver;
+    line-height: 2.5em;
+    margin-bottom: 2em;
+}
+
+#home_button {
+    font-size: 1.1em;
+    font-weight: xx-large;
+    color: silver;
+}*/

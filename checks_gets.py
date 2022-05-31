@@ -1,7 +1,3 @@
-# pylint:disable=invalid-name
-import random
-
-
 def check_not_empty(board: dict):
     """
     Checks if there are any empty spaces left on the board.
@@ -51,29 +47,3 @@ def end_check(board: dict, sym):  # Ended, isTie
     if all(x for rs in board.values() for x in rs):
         return True, True
     return False, False
-
-
-# GETS
-
-
-def get_ai_move(board: dict):
-    """
-    Randomly chooses a space from the available options.
-    """
-    opts = []
-    for col, row in board.items():
-        for ind, space in enumerate(row, 1):
-            if space == "":
-                opts.append(f"{ind}{col}")
-    return random.choice(opts)
-
-
-def get_move(board: dict, _next):
-    """
-    Checks whose move it is, and gives the proper prompt for said move.
-    """
-    if _next == "AI":
-        text = get_ai_move(board)
-    else:
-        ...
-    return text

@@ -26,7 +26,7 @@ def args(_args, *wanted):
 def home():
     """index"""
     soup = bs4.BeautifulSoup(
-        open("index.html", "r", encoding="utf-8").read(), "html.parser"
+        open("src/index.html", "r", encoding="utf-8").read(), "html.parser"
     )
     body = soup.find("body", recursive=True)
     for gid, game in games.items():
@@ -39,19 +39,33 @@ def home():
                 "input",
                 id="join_game_button",
                 type="button",
-                value="Join Game",
+                value="Join Room",
                 onclick=f"location.href='/joinGame?game={gid}';",
             )
         )
         body.append(join_game_div)
-    start_new = soup.new_tag(
-        "input",
-        id="start_new",
-        type="button",
-        value="Start New",
-        onclick="location.href='/newGame';",
+    start_div = soup.new_tag("div", id="start_div")
+    start_div.append(
+        soup.new_tag(
+            "input",
+            id="new_game",
+            type="button",
+            value="New Game",
+            onclick="location.href='/newGame';",
+            attrs={"class": "start_button"},
+        )
     )
-    body.append(start_new)
+    # start_div.append(
+    #   soup.new_tag(
+    #      "input",
+    #     id="new_game",
+    #    type="button",
+    #   value="New Room",
+    #  onclick="location.href='/newRoom';",
+    # attrs={"class": "start_button"},
+    # )
+    # )
+    body.append(start_div)
     return soup.prettify()
 
 
@@ -83,7 +97,7 @@ def new_game():
         ai_game=False,
     )
     soup = bs4.BeautifulSoup(
-        open("game.html", "r", encoding="utf-8").read(), "html.parser"
+        open("src/game.html", "r", encoding="utf-8").read(), "html.parser"
     )
     name = soup.find("div", id="div_name", recursive=True)
     for i, n, a in [("one", "1", ", true"), ("two", "2", "")]:
@@ -112,7 +126,7 @@ def join_game():
     if game and (not games.get(game) or len(games.get(game).get("players", [])) >= 2):
         return refresh("game_not_found_or_full")
     soup = bs4.BeautifulSoup(
-        open("game.html", "r", encoding="utf-8").read(), "html.parser"
+        open("src/game.html", "r", encoding="utf-8").read(), "html.parser"
     )
     soup.find("div", id="room_name", recursive=True).append(
         f"Room Name: {games[game]['name']}"
@@ -149,7 +163,7 @@ def active_game():
             )
         )
     soup = bs4.BeautifulSoup(
-        open("game.html", "r", encoding="utf-8").read(), "html.parser"
+        open("src/game.html", "r", encoding="utf-8").read(), "html.parser"
     )
     meta(soup, game)
     chnm = soup.find("div", id="change_name", recursive=True)
@@ -416,19 +430,19 @@ def about():
     """
     About page
     """
-    return flask.send_file("about.html")
+    return flask.send_file("src/about.html")
 
 
 @app.route("/style.css")
 def style():
     """style"""
-    return flask.send_file("style.css")
+    return flask.send_file("src/style.css")
 
 
 @app.route("/functions.js")
 def functions_js():
     """functions"""
-    return flask.send_file("functions.js")
+    return flask.send_file("src/functions.js")
 
 
 app.run(port=7744, debug=True)

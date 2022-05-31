@@ -1,5 +1,5 @@
 # help, how do i typehint this
-#pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
 """
 All object models
 """
@@ -13,7 +13,7 @@ class Player:
     Player class
     """
 
-    game: str#Game
+    game: str  # Game
     name: str
     number: int
     symbol: str
@@ -29,7 +29,7 @@ class Game:
     """
 
     game_id: str
-    room: str#Room
+    room: str  # Room
     name: str
     number: int
     players: List[Player] = []
