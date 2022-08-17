@@ -12,6 +12,7 @@ from checks_gets import end_check
 
 app = flask.Flask(__name__)
 
+rooms = {}
 games = {}
 
 
@@ -22,6 +23,48 @@ def args(_args, *wanted):
     return (_args.get(x, "").strip() for x in wanted)
 
 
+def make_room(name: str = None) -> str:
+    """
+    Makes a new room.
+    """
+    room = uuid.uuid1().hex
+    rooms[room] = dict(
+        name=name or "", allPlayers=[], lostPlayers=[], games={}, ended=False
+    )
+    return room
+
+
+def make_game(roomid: str = None) -> str:
+    """
+    Makes a new game.
+    """
+    game = uuid.uuid1().hex
+    (rooms[roomid]["games"] if roomid else games)[game] = dict(
+        name="",
+        # number=0,
+        board={"a": ["", "", ""], "b": ["", "", ""], "c": ["", "", ""]},
+        turn=random.choice((True, False)),
+        players=[],
+        ended=False,
+        tie=False,
+        ai_game=False,
+    )
+    return game
+
+
+def generate_games(where, typeof):
+    """
+    Generates games.
+    """
+    for rid, room in where.items():
+        if (
+            room["ended"]
+            or len(room["players"]) < 1
+            or (typeof == "game" and len(room["players"]) != 1)
+        ):
+            continue
+
+
 @app.route("/")
 def home():
     """index"""
@@ -29,18 +72,37 @@ def home():
         open("src/index.html", "r", encoding="utf-8").read(), "html.parser"
     )
     body = soup.find("body", recursive=True)
-    for gid, game in games.items():
+    for rid, room in rooms.items():
+        if len(room["allPlayers"]) < 1 or room["ended"]:
+            continue
+        join_room_div = soup.new_tag(
+            "div", id=f"join_room_{rid}_div", attrs={"class": "join_room_div"}
+        )
+        join_room_div.append(f"Room Name: {room['name']}")
+        join_room_div.append(
+            soup.new_tag(
+                "input",
+                id=f"join_room_{rid}_button",
+                type=button,
+                value="Join Room",
+                onclick=f"location.href='/joinRoom?room={rid}",
+                attrs={"class": "join_room_button"},
+            )
+        )
         if len(game["players"]) != 1 or game["ended"] or not any(game["players"]):
             continue
-        join_game_div = soup.new_tag("div", id="join_game_div")
-        join_game_div.append(f"Room Name: {game['name']}")
+        join_game_div = soup.new_tag(
+            "div", id=f"join_game_{gid}_div", attrs={"class": "join_game_div"}
+        )
+        join_game_div.append(f"Game Name: {game['name']}")
         join_game_div.append(
             soup.new_tag(
                 "input",
-                id="join_game_button",
+                id=f"join_game_{gid}_button",
                 type="button",
-                value="Join Room",
+                value="Join Game",
                 onclick=f"location.href='/joinGame?game={gid}';",
+                attrs={"class": "join_game_button"},
             )
         )
         body.append(join_game_div)
@@ -55,16 +117,16 @@ def home():
             attrs={"class": "start_button"},
         )
     )
-    # start_div.append(
-    #   soup.new_tag(
-    #      "input",
-    #     id="new_game",
-    #    type="button",
-    #   value="New Room",
-    #  onclick="location.href='/newRoom';",
-    # attrs={"class": "start_button"},
-    # )
-    # )
+    start_div.append(
+        soup.new_tag(
+            "input",
+            id="new_game",
+            type="button",
+            value="New Room",
+            onclick="location.href='/newRoom';",
+            attrs={"class": "start_button"},
+        )
+    )
     body.append(start_div)
     return soup.prettify()
 
@@ -81,21 +143,20 @@ def meta(soup, game):
         soup.find("head").append(soup.new_tag("meta", id=i, content=v))
 
 
+@app.route("/newRoom")
+def new_room():
+    """
+    Creates a new room.
+    """
+    room = make_room()
+    return flask.redirect(f"/?room={room}")
+
+
 @app.route("/newGame")
 def new_game():
     """
     Creates new game.
     """
-    game = uuid.uuid1().hex
-    games[game] = dict(
-        name="",
-        board={"a": ["", "", ""], "b": ["", "", ""], "c": ["", "", ""]},
-        turn=random.choice((True, False)),
-        players=[],
-        ended=False,
-        tie=False,
-        ai_game=False,
-    )
     soup = bs4.BeautifulSoup(
         open("src/game.html", "r", encoding="utf-8").read(), "html.parser"
     )
