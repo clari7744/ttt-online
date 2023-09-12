@@ -445,4 +445,6 @@ def functions_js():
     return flask.send_file("src/functions.js")
 
 
-app.run(port=7744, debug=True)
+# app.run(port=7744, debug=True)
+from waitress import serve
+serve(app, port=7744)

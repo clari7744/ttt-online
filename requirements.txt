@@ -5,3 +5,4 @@ orjson
 pip
 pylint
 python-dotenv
+waitress
