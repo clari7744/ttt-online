@@ -1,8 +1,8 @@
-black
-bs4
-flask
-orjson
-pip
-pylint
-python-dotenv
-waitress
+black~=24.4
+bs4~=0.0
+flask~=3.0
+isort~=5.13
+orjson~=3.10
+pylint~=3.2
+python-dotenv~=1.0
+waitress~=3.0

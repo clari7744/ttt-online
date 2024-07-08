@@ -1,34 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>TicTacToe!</title>
+        <meta description="Play TicTacToe!" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" type="text/css" href="style.css" />
+        <script src="functions.js"></script>
+    </head>
+    <h1>TicTacToe!</h1>
 
-<head>
-	<meta charset="utf-8">
-	<title>TicTacToe!</title>
-	<meta description="Play TicTacToe!">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" type="text/css" href="style.css">
-	<script src="functions.js"></script>
-</head>
-<h1>TicTacToe!</h1>
+    <body>
+        <div id="room_name"></div>
+        <div id="join_opponent"></div>
+        <div id="div_name">
+            Enter name: <input id="input_name" type="text" />
+        </div>
+        <div id="div_opponent"></div>
+        <div id="change_name"></div>
 
-<body>
-	<div id="room_name"></div>
-	<div id="join_opponent"></div>
-	<div id="div_name">
-		Enter name: <input id="input_name" type="text">
-	</div>
-	<div id="div_opponent"></div>
-	<div id="change_name"></div>
-
-	<div id="board_div" class="board_div"></div>
-	<div id="turn_number"></div>
-</body>
-<footer>
-	<div id="home_div">
-		<a href='/' title="Go Home">
-			<input type="button" id="home_button" value="Go Home">
-		</a>
-	</div>
-</footer>
-
+        <div id="board_div" class="board_div"></div>
+        <div id="turn_number"></div>
+    </body>
+    <footer>
+        <div id="home_div">
+            <a href="/" title="Go Home">
+                <input type="button" id="home_button" value="Go Home" />
+            </a>
+        </div>
+    </footer>
 </html>

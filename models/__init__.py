@@ -1,4 +1,1 @@
-"""
-imports
-"""
-from .modles import Game, Room, Player
+from .models import Board, Game, Player, Room
